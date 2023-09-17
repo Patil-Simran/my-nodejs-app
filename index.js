@@ -6,7 +6,7 @@ import Image from 'next/image';
 import mypic from '../public/worqhatlogo.png';
 
 import { BrowserRouter as Router, Route, Switch, useHistory } from 'react-router-dom';
-
+const inter = Inter({ subsets: ['latin'] });
 // Import the Request library to make requests to the WorqHat API
 const request = require("request");
 // Load the WorqHat AI API key from a file named ".env"
@@ -49,7 +49,7 @@ request(requestOptions, (error, response, body) => {
     }
 });
 
-const inter = Inter({ subsets: ['latin'] });
+
 
 function homePage(){
     return(
@@ -170,36 +170,86 @@ const handleGenerateCodeClick = async () => {
     const language = document.getElementById('language').value;
     const questionText = document.getElementById('textbox1').value;
 };
-
 async function fetchAIResponse(selectedLanguage, question) {
     const API_ENDPOINT = 'https://api.worqhat.com/api/ai/content/v2';
-
-    const API_KEY = process.env.WORQHAT_API_KEY;
-    const ORG_KEY = process.env.WORQHAT_ORG_KEY;
-
-    console.log(API_KEY);
-
-    const prompt = "This is the command that will be sent to the API"
+    const API_KEY = 'sk-ed288224b836428a807fb6d6807b84bb'; // Replace with your API key
 
     const requestOptions = {
         method: 'POST',
         headers: {
+            Authorization: `Bearer ${API_KEY}`,
             'Content-Type': 'application/json',
-            'x-api-key': API_KEY,
-            'x-org-key': ORG_KEY,
         },
         body: JSON.stringify({
-            question: prompt,
+            question: userMessage,
             randomness: 0.4,
         }),
     };
 
-    const response = await fetch(API_ENDPOINT, requestOptions);
-    return await response.json();
+    try {
+        const response = await fetch(API_ENDPOINT, requestOptions);
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            return data.content;
+        } else {
+            console.error('AI response error:', data.error);
+            return 'AI response error';
+        }
+    } catch (error) {
+        console.error('Error fetching AI response:', error);
+        return 'Error fetching AI response';
+    }
+}
+
+// Implement your AI integration function here
+async function someAIIntegration(userMessage) {
+    // Call the fetchAIResponse function to get the AI's response
+    const aiResponse = await fetchAIResponse(userMessage);
+    
+    return aiResponse;
 }
 
 
+
+    const response = await fetch(API_ENDPOINT, requestOptions);
+    return await response.json();
+
+
+
  function HomeComponents(){
+    const [conversation, setConversation] = useState([]);
+    const [inputText, setInputText] = useState('');
+    const history = useHistory();
+
+    const handleSendMessage = async () => {
+        if (inputText.trim() === '') return;
+
+        // Add user's message to the conversation
+        setConversation([...conversation, { text: inputText, type: 'user' }]);
+        setInputText('');
+
+        // Send user's message to the WorqHat AI
+        const response = await fetchAIResponse(inputText);
+
+        // Add AI's response to the conversation
+        setConversation([...conversation, { text: response.content, type: 'ai' }]);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    const handleManageMedicationClick = () => {
+        history.push('/manage-medication');
+    };
+
+    const handleFindDoctorClick = () => {
+        history.push('/find-doctor');
+    };
     return (
             <div className="text-black">
                <h1 className="text-4xl md:text-5xl text-center mt-8 font-bold">Text to Code Generator</h1>
