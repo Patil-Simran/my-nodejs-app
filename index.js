@@ -202,7 +202,6 @@ async function fetchAIResponse(selectedLanguage, question) {
     }
 }
 
-// Implement your AI integration function here
 async function someAIIntegration(userMessage) {
     // Call the fetchAIResponse function to get the AI's response
     const aiResponse = await fetchAIResponse(userMessage);
@@ -225,14 +224,12 @@ async function someAIIntegration(userMessage) {
     const handleSendMessage = async () => {
         if (inputText.trim() === '') return;
 
-        // Add user's message to the conversation
         setConversation([...conversation, { text: inputText, type: 'user' }]);
         setInputText('');
 
-        // Send user's message to the WorqHat AI
+  
         const response = await fetchAIResponse(inputText);
 
-        // Add AI's response to the conversation
         setConversation([...conversation, { text: response.content, type: 'ai' }]);
     };
 
